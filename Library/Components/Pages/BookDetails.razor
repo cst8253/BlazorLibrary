@@ -1,0 +1,41 @@
+﻿@page "/books/{BookID:int}"
+@using Library.Data
+@using Library.Models
+@using Microsoft.EntityFrameworkCore
+
+@inject LibraryContext DbContext
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+<h3>Book Details</h3>
+
+@if (book == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div>
+        <h4>@book.Title</h4>
+        <p><strong>Author:</strong> @book.Author</p>
+        <p><strong>Genre:</strong> @book.Genre</p>
+        <p><strong>Published Year:</strong> @(book.PublishedYear.HasValue ? book.PublishedYear.ToString() : "Unknown")
+        </p>
+    </div>
+}
+
+@code {
+    [Parameter] public int BookID { get; set; }
+
+    private Book book;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the book details
+        book = await DbContext.Books
+            .Where(b => b.BookID == BookID)
+            .FirstOrDefaultAsync();
+
+    }
+}

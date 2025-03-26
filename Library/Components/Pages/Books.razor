@@ -1,0 +1,114 @@
+﻿@page "/books"
+@using Library.Data
+@using Library.Models
+@using Microsoft.EntityFrameworkCore
+
+@inject LibraryContext DbContext
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+<h3>Library Books</h3>
+
+@if (books == null)
+{
+    <p>Loading...</p>
+}
+else if (!books.Any())
+{
+    <p>No books found in the library.</p>
+    <button class="btn btn-success mb-3" @onclick="AddBook">Add a Book</button>
+}
+else
+{
+    <button class="btn btn-success mb-3" @onclick="AddBook">Add a Book</button>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Genre</th>
+            <th>Published Year</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var book in books)
+        {
+            <tr>
+                <td>@book.Title</td>
+                <td>@book.Author</td>
+                <td>@book.Genre</td>
+                <td>@(book.PublishedYear.HasValue ? book.PublishedYear.ToString() : "Unknown")</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => NavigateToBookDetails(book.BookID)">View Details
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+<div class="@backdropClass" style="display: @backdropDisplay;"></div>
+
+<div class="modal @modalClass" tabindex="-1" style="display: @modalDisplay;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add a Book</h5>
+                <button type="button" class="btn-close" @onclick="AddBook" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Hi there! It looks you need to complete this feature to add a new book to the libary.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseAddBook">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private List<Book> books;
+    
+    // Classes for handling the display of the modal popup
+    private string modalClass = "";
+    private string modalDisplay = "none";
+    
+    // Classes for dimming the page while the popup is displayed
+    private string backdropClass = "";
+    private string backdropDisplay = "none";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get all books from the database
+        books = await DbContext.Books.ToListAsync();
+    }
+    
+    private void AddBook()
+    {
+        modalClass = "show";
+        modalDisplay = "block";
+        
+        backdropClass = "modal-backdrop show";
+        backdropDisplay = "block";
+
+    }
+    
+    private void CloseAddBook()
+    {
+        modalClass = ""; // Hide the modal
+        modalDisplay = "none";
+        
+        backdropClass = ""; // Hide the backdrop
+        backdropDisplay = "none";
+
+    }
+
+    private void NavigateToBookDetails(int bookId)
+    {
+        Navigation.NavigateTo($"/books/{bookId}");
+    }
+}
